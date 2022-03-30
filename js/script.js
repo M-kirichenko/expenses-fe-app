@@ -20,6 +20,15 @@ class Expenses {
 
   createItemHTML(item) {
     const {name, price, date = Date.now()} = item;
+
+    let dateFinal = new Date(date);
+
+    const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate()
+    const month = dateFinal.getMonth() < 10 ? "0" + dateFinal.getMonth() : dateFinal.getMonth();
+    const year = dateFinal.getFullYear(); 
+
+    dateFinal = `${day} / ${month} / ${year}`;
+
     const expItem = document.createElement("div");
     expItem.classList.add("exp-item");
     const expText = document.createElement("div");
@@ -42,7 +51,7 @@ class Expenses {
     editInpDate.classList.add("edit-inp");
     editInpDate.setAttribute("type", "text");
     editInpDate.disabled = true;
-    editInpDate.value = date;
+    editInpDate.value = dateFinal;
     expDateDiv.append(editInpDate);
     expPriceAndDate.append(expDateDiv);
     const priceInpSpan = document.createElement("span");
