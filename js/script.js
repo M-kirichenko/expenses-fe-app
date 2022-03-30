@@ -14,19 +14,13 @@ class Expenses {
     this.show();
   }
 
-  func() {
-    console.log("ok");
-  }
-
   createItemHTML(item) {
     const {name, price, date = Date.now()} = item;
 
     let dateFinal = new Date(date);
-
-    const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate()
+    const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate();
     const month = dateFinal.getMonth() < 10 ? "0" + dateFinal.getMonth() : dateFinal.getMonth();
     const year = dateFinal.getFullYear(); 
-
     dateFinal = `${day} / ${month} / ${year}`;
 
     const expItem = document.createElement("div");
@@ -75,15 +69,13 @@ class Expenses {
     itemIconsDiv.append(deleteIcon);
     expPriceAndDate.append(itemIconsDiv);
     expItem.append(expPriceAndDate);
+    
     return expItem;
   }
 
-  show(){
+  show() {
     const allExpenses = JSON.parse(localStorage.getItem("expenses"));
-
-    allExpenses.forEach(item => {
-      this.expensesWrapper.append(this.createItemHTML(item));
-    });
+    allExpenses.forEach(item => this.expensesWrapper.append(this.createItemHTML(item)));
   }
 }
 
