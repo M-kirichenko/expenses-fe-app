@@ -12,30 +12,25 @@ class Expenses {
       this.expPrice.classList.add("warn-border");
       this.expName.classList.add("warn-border");
     } else {
-      const prevData = this.getData();
-      const obj = {name: nameVal, price: priceVal};
-  
-      if(!prevData) {
-        const arr = [];
-        arr.push(obj);
-        this.setData(arr);
-      } else {
+        const prevData = this.getData();
+        const obj = {name: nameVal, price: priceVal};
         prevData.push(obj);
         this.setData(prevData);
-      }
     }
+    
     this.expName.value = "";
     this.expPrice.value = "";
   }
   
   getData() {
-    if(localStorage.expenses) return JSON.parse(localStorage.expenses);
-    return false;
+    const expenses = JSON.parse(localStorage.getItem("expenses"));
+
+    return expenses?expenses:[];
   }
   
   setData(data) {
     const dataToString = JSON.stringify(data);
-    localStorage.expenses = dataToString;
+    localStorage.setItem("expenses", dataToString);
   }
   
   use() {
