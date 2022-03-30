@@ -13,7 +13,7 @@ class Expenses {
       this.expName.classList.add("warn-border");
     } else {
         const prevData = this.getData();
-        const obj = {name: nameVal, price: priceVal};
+        const obj = { name: nameVal, price: priceVal };
         prevData.push(obj);
         this.setData(prevData);
     }
@@ -25,7 +25,7 @@ class Expenses {
   getData() {
     const expenses = JSON.parse(localStorage.getItem("expenses"));
 
-    return expenses?expenses:[];
+    return expenses || [];
   }
   
   setData(data) {
