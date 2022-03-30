@@ -1,0 +1,36 @@
+@media(max-width: 600px) {
+  #expenses-outer-wrapper {
+    width: 96%;
+  }
+  
+  .exp-inp-wrapper {
+    margin-top: 15px;
+  }
+
+  #inputs-wrapper {
+    width: 90%;
+    flex-direction: column;
+    margin: auto;
+  }
+
+  .item-icons {
+    width: 30%;
+    align-content: space-between;
+  }
+
+  #inputs-wrapper input {
+    width: 100%;
+  }
+
+  .exp-price-and-date {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .price-inp::after {
+    margin: 0px;
+  }
+  .edit-inp{
+    text-align: right;
+  }
+}

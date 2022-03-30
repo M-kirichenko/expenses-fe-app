@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <title>Expenses-App</title>
+</head>
+<body>
+  <div id="expenses-outer-wrapper">
+      <h2>Expense accounting</h2>
+      <div id="inputs-wrapper">
+          <div class="exp-inp-wrapper">
+            <label>Spent on</label>
+            <input type="text" placeholder="What was spent on" class="exp-inp" id="exp-name">
+          </div>
+          <div class="exp-inp-wrapper">
+            <label>How much?</label>
+            <input type="number" placeholder="how much has been spent" class="exp-inp"  min="1" id="exp-price">
+          </div>
+          <div class="exp-inp-wrapper" id="add-wrapp">
+            <button type="button" id="add" class="exp-inp">ADD</button>
+          </div>
+          <div id="total"><strong>Total:</strong>&nbsp;<span id="sum">200</span>&nbsp;$</div>
+      </div>
+      
+      <div id="expenses">
+        <div class="exp-item">
+          <div class="exp-text">
+            <span><input type="text" value="bought some food" class="edit-inp" disabled></span>
+          </div>
+          <div class="exp-price-and-date">
+            <div class="exp-date"><input type="text" value="2022-02-01" class="edit-inp"></div>
+            <span class="price-inp">
+              <input type="number" value="1000" class="edit-inp" disabled>
+            </span>
+            <div class="item-icons">
+              <i class="fa fa-pencil"></i>
+              <i class="fa fa-trash-o"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+</body>
+<script src="js/script.js"></script>
+</html>
