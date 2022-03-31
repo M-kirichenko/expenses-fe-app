@@ -68,7 +68,6 @@ class Expenses {
     const editInpDate = document.createElement("input");
     editInpDate.classList.add("edit-inp");
     editInpDate.setAttribute("type", "text");
-    editInpDate.setAttribute("pattern", "d{1,2}/\d{1,2}/\d{4}")
     editInpDate.value = dateFinal;
     expDateDiv.append(editInpDate);
     expPriceAndDate.append(expDateDiv);
@@ -143,18 +142,18 @@ class Expenses {
   }
 
   save(clickedParent, index){
-    let hasEmptyInp = false;
     const currInputs = clickedParent.querySelectorAll("input");
     const allExpenses = this.getData();
     
     currInputs.forEach(input => {
-      if(!input.value.length) {
-        hasEmptyInp = true;
-        input.classList.add("warn-border");
-      }
-    })
+      if(!input.value.length) input.classList.add("warn-border");
+    });
 
-    if(!hasEmptyInp) {
+    if(
+      !currInputs[0].classList.contains("warn-border") &&
+      !currInputs[1].classList.contains("warn-border") &&
+      !currInputs[2].classList.contains("warn-border")
+      ) {
       allExpenses[index].name = currInputs[0].value;
       allExpenses[index].date = currInputs[1].value;
       allExpenses[index].price = currInputs[2].value;
