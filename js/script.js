@@ -8,19 +8,22 @@ class Expenses {
   add() {
     const priceVal = this.expPrice.value;
     const nameVal = this.expName.value;
-  
+    
     if(!priceVal.length || !nameVal.length) {
       this.expPrice.classList.add("warn-border");
       this.expName.classList.add("warn-border");
     } else {
         const prevData = this.getData();
-        const obj = { name: nameVal, price: priceVal };
+        const id = prevData.length + 1;
+        const obj = { id, name: nameVal, price: priceVal };
         prevData.push(obj);
         this.setData(prevData);
+        this.expName.value = "";
+        this.expPrice.value = "";
+        this.expPrice.classList.remove("warn-border");
+        this.expName.classList.remove("warn-border");
+        this.show();
     }
-    
-    this.expName.value = "";
-    this.expPrice.value = "";
   }
   
   getData() {
@@ -99,8 +102,14 @@ class Expenses {
   }
 
   show() {
-    const allExpenses = JSON.parse(localStorage.getItem("expenses"));
-    allExpenses.forEach(item => this.expensesWrapper.append(this.createItemHTML(item)));
+    const allExpenses = this.getData();
+    this.expensesWrapper.innerHTML = "";
+    if(allExpenses.length) {
+      allExpenses.forEach(item => {
+        const itemHTML = this.createItemHTML(item);
+        this.expensesWrapper.append(itemHTML);
+      });
+    }
   }
 }
 
