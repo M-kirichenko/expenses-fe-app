@@ -8,19 +8,21 @@ class Expenses {
   add() {
     const priceVal = this.expPrice.value;
     const nameVal = this.expName.value;
-  
+    
     if(!priceVal.length || !nameVal.length) {
       this.expPrice.classList.add("warn-border");
       this.expName.classList.add("warn-border");
     } else {
         const prevData = this.getData();
-        const obj = { name: nameVal, price: priceVal };
+        const obj = {name: nameVal, price: priceVal };
         prevData.push(obj);
         this.setData(prevData);
+        this.expName.value = "";
+        this.expPrice.value = "";
+        this.expPrice.classList.remove("warn-border");
+        this.expName.classList.remove("warn-border");
+        this.show();
     }
-    
-    this.expName.value = "";
-    this.expPrice.value = "";
   }
   
   getData() {
@@ -39,7 +41,7 @@ class Expenses {
     this.show();
   }
 
-  createItemHTML(item) {
+  createItemHTML(item, index) {
     const {name, price, date = Date.now()} = item;
 
     let dateFinal = new Date(date);
@@ -90,6 +92,7 @@ class Expenses {
     const deleteIcon = document.createElement("i");
     deleteIcon.classList.add("fa");
     deleteIcon.classList.add("fa-trash-o");
+    deleteIcon.addEventListener("click", () => this.delete(index));
     itemIconsDiv.append(editIcon);
     itemIconsDiv.append(deleteIcon);
     expPriceAndDate.append(itemIconsDiv);
@@ -99,8 +102,24 @@ class Expenses {
   }
 
   show() {
-    const allExpenses = JSON.parse(localStorage.getItem("expenses"));
-    allExpenses.forEach(item => this.expensesWrapper.append(this.createItemHTML(item)));
+    const allExpenses = this.getData();
+    this.expensesWrapper.innerHTML = "";
+
+    if(allExpenses.length) {
+      allExpenses.forEach((item, index) => {
+        const itemHTML = this.createItemHTML(item, index);
+        this.expensesWrapper.append(itemHTML);
+      });
+    }
+  }
+
+  delete(index) {
+    const allExpenses = this.getData();
+    const filteredData = allExpenses.filter( (item, i) => i !== index ?? item );
+    this.setData(filteredData);
+    this.show();
+
+    if(!filteredData.length) localStorage.removeItem("expenses");
   }
 }
 
