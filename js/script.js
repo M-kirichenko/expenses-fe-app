@@ -14,7 +14,7 @@ class Expenses {
       this.expName.classList.add("warn-border");
     } else {
         const prevData = this.getData();
-        const obj = {name: nameVal, price: priceVal };
+        const obj = { name: nameVal, price: priceVal };
         prevData.push(obj);
         this.setData(prevData);
         this.expName.value = "";
@@ -42,13 +42,13 @@ class Expenses {
   }
 
   createItemHTML(item, index) {
-    const {name, price, date = Date.now()} = item;
+    const { name, price, date = Date.now() } = item;
 
     let dateFinal = new Date(date);
     const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate();
     const month = dateFinal.getMonth() < 10 ? "0" + dateFinal.getMonth() : dateFinal.getMonth();
     const year = dateFinal.getFullYear(); 
-    dateFinal = `${day} / ${month} / ${year}`;
+    dateFinal = `${day}/${month}/${year}`;
 
     const expItem = document.createElement("div");
     expItem.classList.add("exp-item");
@@ -66,7 +66,7 @@ class Expenses {
     
     const expPriceAndDate = document.createElement("div");
     expPriceAndDate.classList.add("exp-price-and-date");
-    const expDateDiv = document.createElement("exp-date");
+    const expDateDiv = document.createElement("div");
     expDateDiv.classList.add("exp-date");
     const editInpDate = document.createElement("input");
     editInpDate.classList.add("edit-inp");
