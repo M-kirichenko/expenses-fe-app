@@ -14,7 +14,7 @@ class Expenses {
       this.expName.classList.add("warn-border");
     } else {
         const prevData = this.getData();
-        const obj = { name: nameVal, price: priceVal };
+        const obj = { name: nameVal, price: priceVal, editable: false };
         prevData.push(obj);
         this.setData(prevData);
     }
@@ -39,7 +39,7 @@ class Expenses {
     this.show();
   }
 
-  createItemHTML(item) {
+  createItemHTML(item, index) {
     const {name, price, date = Date.now()} = item;
 
     let dateFinal = new Date(date);
@@ -57,7 +57,6 @@ class Expenses {
     const editInpName = document.createElement("input");
     editInpName.classList.add("edit-inp");
     editInpName.setAttribute("type", "text");
-    editInpName.disabled = true;
     editInpName.value = name;
     expTextSpan.append(editInpName);
     expItem.append(expText);
@@ -69,7 +68,7 @@ class Expenses {
     const editInpDate = document.createElement("input");
     editInpDate.classList.add("edit-inp");
     editInpDate.setAttribute("type", "text");
-    editInpDate.disabled = true;
+    editInpDate.setAttribute("pattern", "d{1,2}/\d{1,2}/\d{4}")
     editInpDate.value = dateFinal;
     expDateDiv.append(editInpDate);
     expPriceAndDate.append(expDateDiv);
@@ -78,29 +77,98 @@ class Expenses {
     const editInpPrice = document.createElement("input");
     editInpPrice.classList.add("edit-inp");
     editInpPrice.setAttribute("type", "number");
-    editInpPrice.disabled = true;
     editInpPrice.value = price;
     priceInpSpan.append(editInpPrice);
     expPriceAndDate.append(priceInpSpan);
     const itemIconsDiv = document.createElement("div");
     itemIconsDiv.classList.add("item-icons");
+    const icons = this.getIcons(item.editable);
     const editIcon = document.createElement("i");
     editIcon.classList.add("fa");
-    editIcon.classList.add("fa-pencil");
+    editIcon.classList.add(icons[0]);
     const deleteIcon = document.createElement("i");
     deleteIcon.classList.add("fa");
-    deleteIcon.classList.add("fa-trash-o");
+    deleteIcon.classList.add(icons[1]);
     itemIconsDiv.append(editIcon);
     itemIconsDiv.append(deleteIcon);
     expPriceAndDate.append(itemIconsDiv);
     expItem.append(expPriceAndDate);
-    
+
+    if(item.editable) {
+      editInpName.disabled = false;
+      editInpDate.disabled = false;
+      editInpPrice.disabled = false;
+
+      editIcon.addEventListener("click", ({target}) => {
+        this.save(target.parentElement.parentElement.parentElement, index)
+      });
+      deleteIcon.addEventListener("click", ({target}) => {
+        this.undo(index)
+      });
+    } else {
+      editInpName.disabled = true;
+      editInpDate.disabled = true;
+      editInpPrice.disabled = true;
+
+      editIcon.addEventListener("click", ({target}) => {
+        this.edit(index)
+      });
+      deleteIcon.addEventListener("click", ({target}) => {
+        this.delete(target, index)
+      });
+    }
+
     return expItem;
   }
 
   show() {
-    const allExpenses = JSON.parse(localStorage.getItem("expenses"));
-    allExpenses.forEach(item => this.expensesWrapper.append(this.createItemHTML(item)));
+    this.expensesWrapper.innerHTML = "";
+    const allExpenses = this.getData();
+    allExpenses.forEach((item, index) => this.expensesWrapper.append(this.createItemHTML(item, index)));
+  }
+
+  getIcons(editable) {
+    return editable ? ["fa-save", "fa-undo"] : ["fa-pencil", "fa-trash-o"];
+  }
+
+  edit(index) {
+    const allExpenses = this.getData();
+    allExpenses[index].editable = !allExpenses[index].editable;
+    this.setData(allExpenses);
+    this.show();
+  }
+
+  delete(index){
+    console.log(`delete ${index}`);
+  }
+
+  save(clickedParent, index){
+    let hasEmptyInp = false;
+    const currInputs = clickedParent.querySelectorAll("input");
+    const allExpenses = this.getData();
+    
+    currInputs.forEach(input => {
+      if(!input.value.length) {
+        hasEmptyInp = true;
+        input.classList.add("warn-border");
+      }
+    })
+
+    if(!hasEmptyInp) {
+      allExpenses[index].name = currInputs[0].value;
+      allExpenses[index].date = currInputs[1].value;
+      allExpenses[index].price = currInputs[2].value;
+      allExpenses[index].editable = false;
+      this.setData(allExpenses);
+      this.show();
+    }   
+  }
+
+  undo(index){
+    const allExpenses = this.getData();
+    allExpenses[index].editable = false;
+    this.setData(allExpenses);
+    this.show();
   }
 }
 
