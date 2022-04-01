@@ -124,7 +124,7 @@ class Expenses {
   show() {
     this.expensesWrapper.innerHTML = "";
     const allExpenses = this.getData();
-    allExpenses.forEach((item, index) => this.expensesWrapper.append(this.createItemHTML(item, index)));
+    allExpenses.forEach( (item, index) => this.expensesWrapper.append(this.createItemHTML(item, index)) );
   }
 
   getIcons(editable) {
