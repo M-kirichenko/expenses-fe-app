@@ -111,10 +111,10 @@ class Expenses {
       editInpPrice.disabled = true;
 
       editIcon.addEventListener("click", () => {
-        this.edit(index)
+        this.edit(index);
       });
       deleteIcon.addEventListener("click", () => {
-        this.delete(index)
+        this.delete(index);
       });
     }
 
