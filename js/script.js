@@ -8,7 +8,7 @@ class Expenses {
   add() {
     const priceVal = this.expPrice.value;
     const nameVal = this.expName.value;
-  
+    
     if(!priceVal.length || !nameVal.length) {
       this.expPrice.classList.add("warn-border");
       this.expName.classList.add("warn-border");
@@ -17,10 +17,12 @@ class Expenses {
         const obj = { name: nameVal, price: priceVal };
         prevData.push(obj);
         this.setData(prevData);
+        this.expName.value = "";
+        this.expPrice.value = "";
+        this.expPrice.classList.remove("warn-border");
+        this.expName.classList.remove("warn-border");
+        this.show();
     }
-    
-    this.expName.value = "";
-    this.expPrice.value = "";
   }
   
   getData() {
@@ -39,14 +41,14 @@ class Expenses {
     this.show();
   }
 
-  createItemHTML(item) {
-    const {name, price, date = Date.now()} = item;
+  createItemHTML(item, index) {
+    const { name, price, date = Date.now() } = item;
 
     let dateFinal = new Date(date);
     const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate();
     const month = dateFinal.getMonth() < 10 ? "0" + dateFinal.getMonth() : dateFinal.getMonth();
     const year = dateFinal.getFullYear(); 
-    dateFinal = `${day} / ${month} / ${year}`;
+    dateFinal = `${day}/${month}/${year}`;
 
     const expItem = document.createElement("div");
     expItem.classList.add("exp-item");
@@ -64,7 +66,7 @@ class Expenses {
     
     const expPriceAndDate = document.createElement("div");
     expPriceAndDate.classList.add("exp-price-and-date");
-    const expDateDiv = document.createElement("exp-date");
+    const expDateDiv = document.createElement("div");
     expDateDiv.classList.add("exp-date");
     const editInpDate = document.createElement("input");
     editInpDate.classList.add("edit-inp");
@@ -90,6 +92,7 @@ class Expenses {
     const deleteIcon = document.createElement("i");
     deleteIcon.classList.add("fa");
     deleteIcon.classList.add("fa-trash-o");
+    deleteIcon.addEventListener("click", () => this.delete(index));
     itemIconsDiv.append(editIcon);
     itemIconsDiv.append(deleteIcon);
     expPriceAndDate.append(itemIconsDiv);
@@ -99,8 +102,24 @@ class Expenses {
   }
 
   show() {
-    const allExpenses = JSON.parse(localStorage.getItem("expenses"));
-    allExpenses.forEach(item => this.expensesWrapper.append(this.createItemHTML(item)));
+    const allExpenses = this.getData();
+    this.expensesWrapper.innerHTML = "";
+
+    if(allExpenses.length) {
+      allExpenses.forEach((item, index) => {
+        const itemHTML = this.createItemHTML(item, index);
+        this.expensesWrapper.append(itemHTML);
+      });
+    }
+  }
+
+  delete(index) {
+    const allExpenses = this.getData();
+    allExpenses.splice(index, 1)
+    this.setData(allExpenses);
+    this.show();
+
+    if(!allExpenses.length) localStorage.removeItem("expenses");
   }
 }
 
