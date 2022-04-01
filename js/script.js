@@ -44,12 +44,13 @@ class Expenses {
 
     let dateFinal = new Date(date);
     const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate();
-    const month = dateFinal.getMonth() < 10 ? "0" + dateFinal.getMonth() : dateFinal.getMonth();
+    const month = dateFinal.getMonth() < 10 ? "0" + (dateFinal.getMonth() + 1) : dateFinal.getMonth();
     const year = dateFinal.getFullYear(); 
-    dateFinal = `${day} / ${month} / ${year}`;
+    dateFinal = `${day}/${month}/${year}`;
 
     const expItem = document.createElement("div");
     expItem.classList.add("exp-item");
+    expItem.setAttribute("id", `expItem${index}`);
     const expText = document.createElement("div");
     expText.classList.add("exp-text");
     const expTextSpan = document.createElement("span");
@@ -63,12 +64,11 @@ class Expenses {
     
     const expPriceAndDate = document.createElement("div");
     expPriceAndDate.classList.add("exp-price-and-date");
-    const expDateDiv = document.createElement("exp-date");
+    const expDateDiv = document.createElement("div");
     expDateDiv.classList.add("exp-date");
     const editInpDate = document.createElement("input");
     editInpDate.classList.add("edit-inp");
     editInpDate.setAttribute("type", "text");
-    editInpDate.setAttribute("pattern", "d{1,2}/\d{1,2}/\d{4}")
     editInpDate.value = dateFinal;
     expDateDiv.append(editInpDate);
     expPriceAndDate.append(expDateDiv);
@@ -100,10 +100,10 @@ class Expenses {
       editInpPrice.disabled = false;
 
       editIcon.addEventListener("click", ({target}) => {
-        this.save(target.parentElement.parentElement.parentElement, index)
+        this.save(index);
       });
-      deleteIcon.addEventListener("click", ({target}) => {
-        this.undo(index)
+      deleteIcon.addEventListener("click", () => {
+        this.undo(index);
       });
     } else {
       editInpName.disabled = true;
@@ -113,8 +113,8 @@ class Expenses {
       editIcon.addEventListener("click", ({target}) => {
         this.edit(index)
       });
-      deleteIcon.addEventListener("click", ({target}) => {
-        this.delete(target, index)
+      deleteIcon.addEventListener("click", () => {
+        this.delete(index)
       });
     }
 
@@ -142,25 +142,42 @@ class Expenses {
     console.log(`delete ${index}`);
   }
 
-  save(clickedParent, index){
+  save(index){
+
     let hasEmptyInp = false;
-    const currInputs = clickedParent.querySelectorAll("input");
+    const currInputs = document.querySelector(`#expItem${index}`).querySelectorAll("input");
     const allExpenses = this.getData();
     
     currInputs.forEach(input => {
-      if(!input.value.length) {
+      if(!input.value) {
         hasEmptyInp = true;
         input.classList.add("warn-border");
       }
     })
 
+
     if(!hasEmptyInp) {
-      allExpenses[index].name = currInputs[0].value;
-      allExpenses[index].date = currInputs[1].value;
-      allExpenses[index].price = currInputs[2].value;
-      allExpenses[index].editable = false;
-      this.setData(allExpenses);
-      this.show();
+
+      const dateIsvalid = (dateStr) => {
+        const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+        return dateStr.match(regex) || false;
+      }
+
+      const validDate = dateIsvalid(currInputs[1].value);
+
+      if(!validDate) {
+        currInputs[1].classList.add("warn-border");
+      } else {
+        let formatedDate = currInputs[1].value.split("/");
+        formatedDate = formatedDate.reverse().join("-");
+        const [name, d, price] = currInputs;
+        allExpenses[index].name = name.value;
+        allExpenses[index].date = formatedDate;
+        allExpenses[index].price = price.value;
+        allExpenses[index].editable = false;
+        this.setData(allExpenses);
+        this.show();
+      }
     }   
   }
 
