@@ -99,7 +99,7 @@ class Expenses {
       editInpDate.disabled = false;
       editInpPrice.disabled = false;
 
-      editIcon.addEventListener("click", ({target}) => {
+      editIcon.addEventListener("click", () => {
         this.save(index);
       });
       deleteIcon.addEventListener("click", () => {
@@ -110,7 +110,7 @@ class Expenses {
       editInpDate.disabled = true;
       editInpPrice.disabled = true;
 
-      editIcon.addEventListener("click", ({target}) => {
+      editIcon.addEventListener("click", () => {
         this.edit(index)
       });
       deleteIcon.addEventListener("click", () => {
