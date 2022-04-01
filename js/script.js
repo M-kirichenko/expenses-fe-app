@@ -116,10 +116,9 @@ class Expenses {
   delete(index) {
     const allExpenses = this.getData();
     allExpenses.splice(index, 1)
-    allExpenses.splice(index, 1);
     this.setData(allExpenses);
     this.show();
-    
+
     if(!allExpenses.length) localStorage.removeItem("expenses");
   }
 }
