@@ -115,11 +115,12 @@ class Expenses {
 
   delete(index) {
     const allExpenses = this.getData();
-    const filteredData = allExpenses.filter( (item, i) => i !== index ?? item );
-    this.setData(filteredData);
+    allExpenses.splice(index, 1)
+    allExpenses.splice(index, 1);
+    this.setData(allExpenses);
     this.show();
-
-    if(!filteredData.length) localStorage.removeItem("expenses");
+    
+    if(!allExpenses.length) localStorage.removeItem("expenses");
   }
 }
 
