@@ -8,7 +8,7 @@ class Expenses {
   add() {
     const priceVal = this.expPrice.value;
     const nameVal = this.expName.value;
-  
+    
     if(!priceVal.length || !nameVal.length) {
       this.expPrice.classList.add("warn-border");
       this.expName.classList.add("warn-border");
@@ -17,10 +17,12 @@ class Expenses {
         const obj = { name: nameVal, price: priceVal, editable: false };
         prevData.push(obj);
         this.setData(prevData);
+        this.expName.value = "";
+        this.expPrice.value = "";
+        this.expPrice.classList.remove("warn-border");
+        this.expName.classList.remove("warn-border");
+        this.show();
     }
-    
-    this.expName.value = "";
-    this.expPrice.value = "";
   }
   
   getData() {
@@ -40,14 +42,12 @@ class Expenses {
   }
 
   createItemHTML(item, index) {
-    const {name, price, date = Date.now()} = item;
-
+    const { name, price, date = Date.now() } = item;
     let dateFinal = new Date(date);
     const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate();
     const month = dateFinal.getMonth() < 10 ? "0" + (dateFinal.getMonth() + 1) : dateFinal.getMonth();
     const year = dateFinal.getFullYear(); 
     dateFinal = `${day}/${month}/${year}`;
-
     const expItem = document.createElement("div");
     expItem.classList.add("exp-item");
     expItem.setAttribute("id", `expItem${index}`);
@@ -89,6 +89,7 @@ class Expenses {
     const deleteIcon = document.createElement("i");
     deleteIcon.classList.add("fa");
     deleteIcon.classList.add(icons[1]);
+    deleteIcon.classList.add("fa-trash-o");
     itemIconsDiv.append(editIcon);
     itemIconsDiv.append(deleteIcon);
     expPriceAndDate.append(itemIconsDiv);
@@ -138,10 +139,6 @@ class Expenses {
     this.show();
   }
 
-  delete(index){
-    console.log(`delete ${index}`);
-  }
-
   save(index){
 
     let hasEmptyInp = false;
@@ -186,6 +183,15 @@ class Expenses {
     allExpenses[index].editable = false;
     this.setData(allExpenses);
     this.show();
+  }
+
+  delete(index) {
+    const allExpenses = this.getData();
+    allExpenses.splice(index, 1)
+    this.setData(allExpenses);
+    this.show();
+
+    if(!allExpenses.length) localStorage.removeItem("expenses");
   }
 }
 
