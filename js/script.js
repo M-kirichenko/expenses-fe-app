@@ -51,7 +51,7 @@ class Expenses {
   }
 
   createItemHTML(item) {
-    let { id, name, price, date, editable = false} = item;
+    const { id, name, price, date, editable = false} = item;
     let dateFinal = new Date(date);
     const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate();
     const month = dateFinal.getMonth() < 10 ? "0" + (dateFinal.getMonth() + 1) : dateFinal.getMonth();
