@@ -190,8 +190,6 @@ class Expenses {
     allExpenses.splice(index, 1)
     this.setData(allExpenses);
     this.show();
-
-    if(!allExpenses.length) localStorage.removeItem("expenses");
   }
 }
 
