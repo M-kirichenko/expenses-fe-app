@@ -15,8 +15,9 @@ class Expenses {
       this.expName.classList.add("warn-border");
     } else {
         const obj = { name: nameVal, price: priceVal };
-        const {ok} = await this.setData(obj, "POST");
-        if(ok) {
+        const dataWritten = await this.setData(obj, "POST");
+        
+        if(dataWritten.status === 200) {
           this.expName.value = "";
           this.expPrice.value = "";
           this.expPrice.classList.remove("warn-border");
@@ -34,14 +35,14 @@ class Expenses {
   setData(item, method = "PATCH") {
     const fetchAddress = item.id?`${this._api_base}/${item.id}`:this._api_base;
     return fetch( fetchAddress, {
-      method: method,
+      method,
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(item)
     }).
-    then( response => response.json() );
+    then( response => response );
   }
   
   use() {
@@ -153,10 +154,7 @@ class Expenses {
     const allExpenses = await this.getData();
     const index = allExpenses.findIndex(item => item.id == id);
     allExpenses[index].editable = !allExpenses[index].editable;
-    this.expensesWrapper.innerHTML = "";
-    allExpenses.forEach(item => {
-      this.expensesWrapper.append(this.createItemHTML(item));
-    })
+    this.noReqRender(allExpenses);
   }
 
   async save(id){
@@ -195,9 +193,9 @@ class Expenses {
         allExpenses[index].date = formatedDate;
         allExpenses[index].price = price.value;
         allExpenses[index].editable = false;
-        const {ok} = await this.setData(allExpenses[index]);
-        
-        if(ok) this.show();
+        const {status} = await this.setData(allExpenses[index]);
+
+        if(status === 200) this.show();
       }
     }   
   }
@@ -206,18 +204,22 @@ class Expenses {
     const allExpenses = await this.getData();
     const index = allExpenses.findIndex(item => item.id == id);
     allExpenses[index].editable = false;
-    this.expensesWrapper.innerHTML = "";
-    allExpenses.forEach(item => {
-      this.expensesWrapper.append(this.createItemHTML(item));
-    })
+    this.noReqRender(allExpenses);
   }
 
   delete(id) {
     fetch(`${this._api_base}/${id}`, {
       method: 'DELETE',
     })
-    .then( response => response.json() )
-    .then(({ok}) => ok && this.show());
+    .then(response => response )
+    .then(({status}) => status == 200 && this.show());
+  }
+  
+  noReqRender(data) {
+    this.expensesWrapper.innerHTML = "";
+    data.forEach(item => {
+      this.expensesWrapper.append(this.createItemHTML(item));
+    })
   }
 }
 
