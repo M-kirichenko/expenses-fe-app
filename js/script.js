@@ -33,7 +33,7 @@ class Expenses {
   }
   
   setData(item, method = "PATCH") {
-    const fetchAddress = item.id?`${this._api_base}/${item.id}`:this._api_base;
+    const fetchAddress = item.id ? `${this._api_base}/${item.id}` : this._api_base;
     return fetch( fetchAddress, {
       method,
       headers: {
@@ -212,7 +212,7 @@ class Expenses {
       method: 'DELETE',
     })
     .then(response => response )
-    .then(({status}) => status == 200 && this.show());
+    .then( ({status}) => status == 200 && this.show() );
   }
   
   noReqRender(data) {
