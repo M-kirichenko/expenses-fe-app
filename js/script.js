@@ -98,7 +98,6 @@ class Expenses {
     const deleteIcon = document.createElement("i");
     deleteIcon.classList.add("fa");
     deleteIcon.classList.add(icons[1]);
-    deleteIcon.classList.add("fa-trash-o");
     itemIconsDiv.append(editIcon);
     itemIconsDiv.append(deleteIcon);
     expPriceAndDate.append(itemIconsDiv);
@@ -112,8 +111,9 @@ class Expenses {
       editIcon.addEventListener("click", () => {
         this.save(id);
       });
+      
       deleteIcon.addEventListener("click", () => {
-        this.undo(id);
+        this.noReqRender(item);
       });
     } else {
       editInpName.disabled = true;
@@ -121,8 +121,9 @@ class Expenses {
       editInpPrice.disabled = true;
 
       editIcon.addEventListener("click", () => {
-        this.edit(id);
+        this.noReqRender(item);
       });
+
       deleteIcon.addEventListener("click", () => {
         this.delete(id);
       });
@@ -150,13 +151,6 @@ class Expenses {
     return editable ? ["fa-save", "fa-undo"] : ["fa-pencil", "fa-trash-o"];
   }
 
-  async edit(id) {
-    const allExpenses = await this.getData();
-    const index = allExpenses.findIndex(item => item.id == id);
-    allExpenses[index].editable = !allExpenses[index].editable;
-    this.noReqRender(allExpenses);
-  }
-
   async save(id){
 
     let hasEmptyInp = false;
@@ -169,7 +163,6 @@ class Expenses {
         input.classList.add("warn-border");
       }
     })
-
 
     if(!hasEmptyInp) {
 
@@ -200,13 +193,6 @@ class Expenses {
     }   
   }
 
-  async undo(id){
-    const allExpenses = await this.getData();
-    const index = allExpenses.findIndex(item => item.id == id);
-    allExpenses[index].editable = false;
-    this.noReqRender(allExpenses);
-  }
-
   delete(id) {
     fetch(`${this._api_base}/${id}`, {
       method: 'DELETE',
@@ -214,12 +200,11 @@ class Expenses {
     .then(response => response )
     .then( ({status}) => status == 200 && this.show() );
   }
-  
-  noReqRender(data) {
-    this.expensesWrapper.innerHTML = "";
-    data.forEach(item => {
-      this.expensesWrapper.append(this.createItemHTML(item));
-    })
+
+  noReqRender(item) {
+    item.editable = !item.editable;
+    const reRendered = this.createItemHTML(item);
+    document.querySelector(`#expItem${item.id}`).replaceWith(reRendered);
   }
 }
 
