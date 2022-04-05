@@ -1,11 +1,12 @@
 class Expenses {
+  _api_base = "http://localhost:3000/api/expenses";
   addButton = document.querySelector("#add");
   total = document.querySelector("#sum");
   expPrice = document.querySelector("#exp-price");
   expName = document.querySelector("#exp-name");
   expensesWrapper = document.querySelector("#expenses");
 
-  add() {
+  async add() {
     const priceVal = this.expPrice.value;
     const nameVal = this.expName.value;
     
@@ -13,44 +14,47 @@ class Expenses {
       this.expPrice.classList.add("warn-border");
       this.expName.classList.add("warn-border");
     } else {
-        const prevData = this.getData();
-        const obj = { name: nameVal, price: priceVal, editable: false };
-        prevData.push(obj);
-        this.setData(prevData);
-        this.expName.value = "";
-        this.expPrice.value = "";
-        this.expPrice.classList.remove("warn-border");
-        this.expName.classList.remove("warn-border");
-        this.show();
+        const obj = { name: nameVal, price: priceVal };
+        const dataWritten = await this.setData(obj, "POST");
+        
+        if(dataWritten.status === 200) {
+          this.expName.value = "";
+          this.expPrice.value = "";
+          this.expPrice.classList.remove("warn-border");
+          this.expName.classList.remove("warn-border");
+          this.show();
+        }
     }
   }
   
   getData() {
-    const expenses = JSON.parse(localStorage.getItem("expenses"));
-
-    return expenses || [];
+    return fetch(this._api_base)
+    .then(response => response.json());
   }
   
-  setData(data) {
-    const dataToString = JSON.stringify(data);
-    localStorage.setItem("expenses", dataToString);
-  }
-  
-  use() {
-    this.addButton.onclick = () => this.add();
-    this.show();
+  setData(item, method = "PATCH") {
+    const fetchAddress = item.id ? `${this._api_base}/${item.id}` : this._api_base;
+    return fetch( fetchAddress, {
+      method,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(item)
+    }).
+    then( response => response );
   }
 
-  createItemHTML(item, index) {
-    const { name, price, date = Date.now() } = item;
+  createItemHTML(item) {
+    const { id, name, price, date, editable = false} = item;
     let dateFinal = new Date(date);
-    const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate();
-    const month = dateFinal.getMonth() < 10 ? "0" + (dateFinal.getMonth() + 1) : dateFinal.getMonth();
+    const day = dateFinal.getDate() < 10 ? `0${dateFinal.getDate()}` : dateFinal.getDate();
+    const month = dateFinal.getMonth() < 10 ? `0${dateFinal.getMonth() + 1}` : dateFinal.getMonth() + 1;
     const year = dateFinal.getFullYear(); 
     dateFinal = `${day}/${month}/${year}`;
     const expItem = document.createElement("div");
     expItem.classList.add("exp-item");
-    expItem.setAttribute("id", `expItem${index}`);
+    expItem.setAttribute("id", `expItem${id}`);
     const expText = document.createElement("div");
     expText.classList.add("exp-text");
     const expTextSpan = document.createElement("span");
@@ -82,29 +86,29 @@ class Expenses {
     expPriceAndDate.append(priceInpSpan);
     const itemIconsDiv = document.createElement("div");
     itemIconsDiv.classList.add("item-icons");
-    const icons = this.getIcons(item.editable);
+    const [saveOrEdit, deleteOrUndo] = this.getIcons(item.editable);
     const editIcon = document.createElement("i");
     editIcon.classList.add("fa");
-    editIcon.classList.add(icons[0]);
+    editIcon.classList.add(saveOrEdit);
     const deleteIcon = document.createElement("i");
     deleteIcon.classList.add("fa");
-    deleteIcon.classList.add(icons[1]);
-    deleteIcon.classList.add("fa-trash-o");
+    deleteIcon.classList.add(deleteOrUndo);
     itemIconsDiv.append(editIcon);
     itemIconsDiv.append(deleteIcon);
     expPriceAndDate.append(itemIconsDiv);
     expItem.append(expPriceAndDate);
 
-    if(item.editable) {
+    if(editable) {
       editInpName.disabled = false;
       editInpDate.disabled = false;
       editInpPrice.disabled = false;
 
       editIcon.addEventListener("click", () => {
-        this.save(index);
+        this.save(item);
       });
+      
       deleteIcon.addEventListener("click", () => {
-        this.undo(index);
+        this.noReqRender(item);
       });
     } else {
       editInpName.disabled = true;
@@ -112,10 +116,11 @@ class Expenses {
       editInpPrice.disabled = true;
 
       editIcon.addEventListener("click", () => {
-        this.edit(index);
+        this.noReqRender(item);
       });
+
       deleteIcon.addEventListener("click", () => {
-        this.delete(index);
+        this.delete(id);
       });
     }
 
@@ -125,73 +130,75 @@ class Expenses {
   show() {
     this.expensesWrapper.innerHTML = "";
     const allExpenses = this.getData();
-    allExpenses.forEach( (item, index) => this.expensesWrapper.append(this.createItemHTML(item, index)) );
+    allExpenses.then(data => {
+      if(data.length) {
+        data.forEach(item => {
+          this.expensesWrapper.append(this.createItemHTML(item)) 
+        });
+      }
+      
+      const sum = data.reduce( (sum, curr) => sum + curr.price, 0);
+      this.total.innerText = sum;
+    });
   }
 
   getIcons(editable) {
     return editable ? ["fa-save", "fa-undo"] : ["fa-pencil", "fa-trash-o"];
   }
 
-  edit(index) {
-    const allExpenses = this.getData();
-    allExpenses[index].editable = !allExpenses[index].editable;
-    this.setData(allExpenses);
-    this.show();
-  }
+  save(item){
+    const {id} = item;
+    const dateIsvalid = (dateStr) => {
+      const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+      return dateStr.match(regex) || false;
+    }
 
-  save(index){
+    let hasErr = false;
+    const currInputs = document.querySelector(`#expItem${id}`).querySelectorAll("input");
+     
+    const [nameInp, dateInp, priceInp] = currInputs;
+   
+    if(!nameInp.value) {
+      hasErr = true;
+      nameInp.classList.add("warn-border");
+    }
 
-    let hasEmptyInp = false;
-    const currInputs = document.querySelector(`#expItem${index}`).querySelectorAll("input");
-    const allExpenses = this.getData();
-    
-    currInputs.forEach(input => {
-      if(!input.value) {
-        hasEmptyInp = true;
-        input.classList.add("warn-border");
-      }
-    })
+    if(!dateIsvalid(dateInp.value)) {
+      hasErr = true;
+      dateInp.classList.add("warn-border");
+    }
 
+    if(!priceInp.value) {
+      hasErr = true;
+      priceInp.classList.add("warn-border");
+    }
 
-    if(!hasEmptyInp) {
-
-      const dateIsvalid = (dateStr) => {
-        const regex = /^\d{2}\/\d{2}\/\d{4}$/;
-        return dateStr.match(regex) || false;
-      }
-
-      const validDate = dateIsvalid(currInputs[1].value);
-
-      if(!validDate) {
-        currInputs[1].classList.add("warn-border");
-      } else {
-        let formatedDate = currInputs[1].value.split("/");
-        formatedDate = formatedDate.reverse().join("-");
-        const [name, d, price] = currInputs;
-        allExpenses[index].name = name.value;
-        allExpenses[index].date = formatedDate;
-        allExpenses[index].price = price.value;
-        allExpenses[index].editable = false;
-        this.setData(allExpenses);
-        this.show();
-      }
+    if(!hasErr) {
+      let formatedDate = dateInp.value.split("/");
+      formatedDate = formatedDate.reverse().join("-");
+      item.name = nameInp.value;
+      item.date = formatedDate;
+      item.price = priceInp.value;
+      item.editable = false;
+      this.setData(item);
     }   
   }
 
-  undo(index){
-    const allExpenses = this.getData();
-    allExpenses[index].editable = false;
-    this.setData(allExpenses);
-    this.show();
+  delete(id) {
+    fetch(`${this._api_base}/${id}`, {
+      method: 'DELETE',
+    })
+    .then(response => response )
+    .then( ({status}) => status == 200 && this.show() );
   }
 
-  delete(index) {
-    const allExpenses = this.getData();
-    allExpenses.splice(index, 1)
-    this.setData(allExpenses);
-    this.show();
+  noReqRender(item) {
+    item.editable = !item.editable;
+    const reRendered = this.createItemHTML(item);
+    document.querySelector(`#expItem${item.id}`).replaceWith(reRendered);
   }
 }
 
 const expenses = new Expenses();
-expenses.use();
+expenses.show();
+expenses.addButton.onclick = () => expenses.add();
