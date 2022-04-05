@@ -44,6 +44,19 @@ class Expenses {
     }).
     then( response => response );
   }
+  
+  setData(item, method = "PATCH") {
+    const fetchAddress = item.id ? `${this._api_base}/${item.id}` : this._api_base;
+    return fetch( fetchAddress, {
+      method,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(item)
+    }).
+    then( response => response );
+  }
 
   createItemHTML(item) {
     const { id, name, price, date, editable = false} = item;
@@ -146,7 +159,7 @@ class Expenses {
     return editable ? ["fa-save", "fa-undo"] : ["fa-pencil", "fa-trash-o"];
   }
 
-  save(item){
+  async save(item){
     const {id} = item;
     const dateIsvalid = (dateStr) => {
       const regex = /^\d{2}\/\d{2}\/\d{4}$/;
@@ -180,7 +193,9 @@ class Expenses {
       item.date = formatedDate;
       item.price = priceInp.value;
       item.editable = false;
-      this.setData(item);
+
+      const {status} = await this.setData(item);
+      if(status === 200) this.noReqRender(item, true);
     }   
   }
 
@@ -192,10 +207,12 @@ class Expenses {
     .then( ({status}) => status == 200 && this.show() );
   }
 
-  noReqRender(item) {
-    item.editable = !item.editable;
+  noReqRender(item, afterSave = false) {
+    if(!afterSave) item.editable = !item.editable;
+    
     const reRendered = this.createItemHTML(item);
-    document.querySelector(`#expItem${item.id}`).replaceWith(reRendered);
+    const itemWrapper = document.querySelector(`#expItem${item.id}`);
+    itemWrapper.replaceWith(reRendered);
   }
 }
 
