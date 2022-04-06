@@ -44,19 +44,6 @@ class Expenses {
     }).
     then( response => response );
   }
-  
-  setData(item, method = "PATCH") {
-    const fetchAddress = item.id ? `${this._api_base}/${item.id}` : this._api_base;
-    return fetch( fetchAddress, {
-      method,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(item)
-    }).
-    then( response => response );
-  }
 
   createItemHTML(item) {
     const { id, name, price, date, editable = false} = item;
