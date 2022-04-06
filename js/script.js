@@ -44,17 +44,12 @@ class Expenses {
     }).
     then( response => response );
   }
-  
-  use() {
-    this.addButton.onclick = () => this.add();
-    this.show();
-  }
 
   createItemHTML(item) {
     const { id, name, price, date, editable = false} = item;
     let dateFinal = new Date(date);
-    const day = dateFinal.getDate() < 10 ? "0" + dateFinal.getDate() : dateFinal.getDate();
-    const month = dateFinal.getMonth() < 10 ? "0" + (dateFinal.getMonth() + 1) : dateFinal.getMonth();
+    const day = dateFinal.getDate() < 10 ? `0${dateFinal.getDate()}` : dateFinal.getDate();
+    const month = dateFinal.getMonth() < 10 ? `0${dateFinal.getMonth() + 1}` : dateFinal.getMonth() + 1;
     const year = dateFinal.getFullYear(); 
     dateFinal = `${day}/${month}/${year}`;
     const expItem = document.createElement("div");
@@ -91,13 +86,13 @@ class Expenses {
     expPriceAndDate.append(priceInpSpan);
     const itemIconsDiv = document.createElement("div");
     itemIconsDiv.classList.add("item-icons");
-    const icons = this.getIcons(item.editable);
+    const [saveOrEdit, deleteOrUndo] = this.getIcons(item.editable);
     const editIcon = document.createElement("i");
     editIcon.classList.add("fa");
-    editIcon.classList.add(icons[0]);
+    editIcon.classList.add(saveOrEdit);
     const deleteIcon = document.createElement("i");
     deleteIcon.classList.add("fa");
-    deleteIcon.classList.add(icons[1]);
+    deleteIcon.classList.add(deleteOrUndo);
     itemIconsDiv.append(editIcon);
     itemIconsDiv.append(deleteIcon);
     expPriceAndDate.append(itemIconsDiv);
@@ -109,7 +104,7 @@ class Expenses {
       editInpPrice.disabled = false;
 
       editIcon.addEventListener("click", () => {
-        this.save(id);
+        this.save(item);
       });
       
       deleteIcon.addEventListener("click", () => {
@@ -151,45 +146,43 @@ class Expenses {
     return editable ? ["fa-save", "fa-undo"] : ["fa-pencil", "fa-trash-o"];
   }
 
-  async save(id){
+  async save(item){
+    const {id} = item;
+    const dateIsvalid = (dateStr) => {
+      const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+      return dateStr.match(regex) || false;
+    }
 
-    let hasEmptyInp = false;
+    let hasErr = false;
     const currInputs = document.querySelector(`#expItem${id}`).querySelectorAll("input");
-    const allExpenses = await this.getData();
-    
-    currInputs.forEach(input => {
-      if(!input.value) {
-        hasEmptyInp = true;
-        input.classList.add("warn-border");
-      }
-    })
+     
+    const [nameInp, dateInp, priceInp] = currInputs;
+   
+    if(!nameInp.value) {
+      hasErr = true;
+      nameInp.classList.add("warn-border");
+    }
 
-    if(!hasEmptyInp) {
+    if(!dateIsvalid(dateInp.value)) {
+      hasErr = true;
+      dateInp.classList.add("warn-border");
+    }
 
-      const dateIsvalid = (dateStr) => {
-        const regex = /^\d{2}\/\d{2}\/\d{4}$/;
-        return dateStr.match(regex) || false;
-      }
+    if(!priceInp.value) {
+      hasErr = true;
+      priceInp.classList.add("warn-border");
+    }
 
-      const validDate = dateIsvalid(currInputs[1].value);
+    if(!hasErr) {
+      let formatedDate = dateInp.value.split("/");
+      formatedDate = formatedDate.reverse().join("-");
+      item.name = nameInp.value;
+      item.date = formatedDate;
+      item.price = priceInp.value;
+      item.editable = false;
 
-      if(!validDate) {
-        currInputs[1].classList.add("warn-border");
-      } else {
-        let formatedDate = currInputs[1].value.split("/");
-        formatedDate = formatedDate.reverse().join("-");
-
-        const index = allExpenses.findIndex(item => item.id == id);
-
-        const [name, d, price] = currInputs;
-        allExpenses[index].name = name.value;
-        allExpenses[index].date = formatedDate;
-        allExpenses[index].price = price.value;
-        allExpenses[index].editable = false;
-        const {status} = await this.setData(allExpenses[index]);
-
-        if(status === 200) this.show();
-      }
+      const {status} = await this.setData(item);
+      if(status === 200) this.noReqRender(item, true);
     }   
   }
 
@@ -201,12 +194,15 @@ class Expenses {
     .then( ({status}) => status == 200 && this.show() );
   }
 
-  noReqRender(item) {
-    item.editable = !item.editable;
+  noReqRender(item, afterSave = false) {
+    if(!afterSave) item.editable = !item.editable;
+    
     const reRendered = this.createItemHTML(item);
-    document.querySelector(`#expItem${item.id}`).replaceWith(reRendered);
+    const itemWrapper = document.querySelector(`#expItem${item.id}`);
+    itemWrapper.replaceWith(reRendered);
   }
 }
 
 const expenses = new Expenses();
-expenses.use();
+expenses.show();
+expenses.addButton.onclick = () => expenses.add();
